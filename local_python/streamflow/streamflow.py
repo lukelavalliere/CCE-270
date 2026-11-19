@@ -30,8 +30,37 @@ def plot_streamflow(dates, flows, sites):
     plt.show()
 
 
+def summarize(dates, flows, sites):
+    # AI-assisted code: NumPy finds each gauge's maximum, maximum date, minimum, and average.
+    # Excel verification for gauge 10163000: Maximum = 131.0 cfs
+    # Excel verification for gauge 10163000: Average = 56.9523611111 cfs
+    print("Gauge     Maximum (cfs)  Date/Time of Maximum  Minimum (cfs)  Average (cfs)")
+    print("------------------------------------------------------------------------")
+
+    rows = []
+    for gauge, site in enumerate(sites):
+        column = flows[:, gauge]
+        maximum = np.max(column)
+        maximum_index = np.argmax(column)
+        maximum_date = str(dates[maximum_index]).replace("T", " ")
+        minimum = np.min(column)
+        average = np.mean(column)
+        print(f"{site:<10}{maximum:>8.1f}  {maximum_date:>20}  {minimum:>10.1f}  {average:>12.4f}")
+        rows.append([site, maximum, maximum_date, minimum, average])
+
+    np.savetxt(
+        "streamflow_summary.csv",
+        rows,
+        delimiter=",",
+        fmt="%s",
+        header="Gauge,Maximum (cfs),Date/Time of Maximum,Minimum (cfs),Average (cfs)",
+        comments=""
+    )
+
+
 if __name__ == "__main__":
     filename = "June-2021-Provo-River-Streamflow-Rates.csv"
     dates, flows = load_streamflow(filename)
     sites = ["10163000", "10155200", "10155500", "10154200", "10155000"]
     plot_streamflow(dates, flows, sites)
+    summarize(dates, flows, sites)
